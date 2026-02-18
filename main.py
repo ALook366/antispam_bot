@@ -7,7 +7,11 @@ import key
 import http.server
 import socketserver
 from stop_list import stop_list_temp
+import os
+from flask import Flask, request
 
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+app = Flask(__name__)
 bot = telebot.TeleBot(key.token)
 stop_words = stop_list_temp
 
@@ -128,16 +132,28 @@ def warn_and_kick(message):
         threading.Thread(target=kick_if_no_response,
                          args=(message.chat.id, message.from_user.id, message.from_user.username)).start()
 
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    json_str = request.get_data().decode('UTF-8')
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return 'OK', 200
 
-def start_polling():
-    bot.infinity_polling(none_stop=True)
 
+#def start_polling():
+    #bot.infinity_polling(none_stop=True)
+bot.remove_webhook()
+bot.set_webhook(url=f"{os.environ.get('WEBHOOK_URL')}/webhook")
+app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
 
 if __name__ == '__main__':
-    threading.Thread(target=start_polling).start()
+    threading.Thread(target=webhook).start()
 
-    port = int(os.environ.get('PORT', 5000))
-    handler = http.server.SimpleHTTPRequestHandler
-    with socketserver.TCPServer(("", port), handler) as httpd:
-        print(f"Serving at port {port}")
-        httpd.serve_forever()
+    #port = int(os.environ.get('PORT', 5000))
+    #handler = http.server.SimpleHTTPRequestHandler
+    #with socketserver.TCPServer(("", port), handler) as httpd:
+        #print(f"Serving at port {port}")
+        #httpd.serve_forever()
+bot.remove_webhook()
+bot.set_webhook(url=f"{os.environ.get('WEBHOOK_URL')}/webhook")
+app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
