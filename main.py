@@ -14,6 +14,7 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN')
 app = Flask(__name__)
 bot = telebot.TeleBot(key.token)
 stop_words = stop_list_temp
+PORT = int(os.environ.get('PORT', 10000))
 
 user_stats = defaultdict(lambda: defaultdict(int))
 pending_verification = defaultdict(lambda: defaultdict(bool))
