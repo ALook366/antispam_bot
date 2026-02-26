@@ -145,7 +145,8 @@ if __name__ == '__main__':
     bot.remove_webhook()
     
     # Устанавливаем новый вебхук
-    webhook_url = f"{WEBHOOK_URL}/webhook"
+    WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
+    webhook_url = f"{WEBHOOK_URL}/webhook" 
     
     try:
         result = bot.set_webhook(url=webhook_url)
