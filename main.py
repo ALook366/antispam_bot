@@ -134,26 +134,31 @@ def warn_and_kick(message):
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    """Принимает POST запросы от Telegram с обновлениями"""
     json_str = request.get_data().decode('UTF-8')
     update = telebot.types.Update.de_json(json_str)
     bot.process_new_updates([update])
     return 'OK', 200
 
-
-#def start_polling():
-    #bot.infinity_polling(none_stop=True)
-bot.remove_webhook()
-bot.set_webhook(url=f"{os.environ.get('WEBHOOK_URL')}/webhook")
-app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
-
+# ===== ТОЧКА ВХОДА =====
 if __name__ == '__main__':
-    threading.Thread(target=webhook).start()
-
-    #port = int(os.environ.get('PORT', 5000))
-    #handler = http.server.SimpleHTTPRequestHandler
-    #with socketserver.TCPServer(("", port), handler) as httpd:
-        #print(f"Serving at port {port}")
-        #httpd.serve_forever()
-bot.remove_webhook()
-bot.set_webhook(url=f"{os.environ.get('WEBHOOK_URL')}/webhook")
-app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+    bot.remove_webhook()
+    
+    # Устанавливаем новый вебхук
+    webhook_url = f"{WEBHOOK_URL}/webhook"
+    
+    try:
+        result = bot.set_webhook(url=webhook_url)
+        if result:
+            print("Вебхук успешно установлен!")
+        else:
+            print("Не удалось установить вебхук")
+    except Exception as e:
+        print(f"ОШИБКА при установке вебхука: {e}")
+    
+    # Проверяем статус вебхука
+    webhook_info = bot.get_webhook_info()
+    print(f"Информация о вебхуке: URL={webhook_info.url}")
+    
+    # Запускаем Flask сервер
+    app.run(host='0.0.0.0', port=PORT)
