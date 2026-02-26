@@ -133,6 +133,11 @@ def warn_and_kick(message):
         threading.Thread(target=kick_if_no_response,
                          args=(message.chat.id, message.from_user.id, message.from_user.username)).start()
 
+@bot.message_handler(func=lambda message: True)
+def echo(message):
+    bot.reply_to(message, f"Вы написали: {message.text}")
+    logger.info(f"Обработано сообщение от {message.from_user.id}: {message.text}")
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     """Принимает POST запросы от Telegram с обновлениями"""
